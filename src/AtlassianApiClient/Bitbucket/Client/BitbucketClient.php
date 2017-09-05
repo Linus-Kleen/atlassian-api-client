@@ -52,13 +52,27 @@ class BitbucketClient
      */
     public function getRepositoriesByProjectKey($key)
     {
-        $response = $this->httpClient->get(
-            '/rest/api/1.0/projects/' . $key . '/repos'
-        )->getBody();
+        $repositories = [];
+        $start = 0;
 
-        $repositories = RepositoryFactory::createRepositoriesFromJson(
-            $response->getContents()
-        );
+        do {
+            $response = $this->httpClient->get(
+                '/rest/api/1.0/projects/' . $key . '/repos?limit=100&start=' . $start
+            )->getBody()->getContents();
+
+            $repositories = array_merge(
+                $repositories,
+                RepositoryFactory::createRepositoriesFromJson(
+                    $response
+                )
+            );
+
+            $data = json_decode($response);
+
+            if (isset($data->nextPageStart)) {
+                $start = $data->nextPageStart;
+            }
+        } while ($data->isLastPage === false);
 
         return $repositories;
     }
