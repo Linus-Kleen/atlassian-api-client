@@ -1,0 +1,20 @@
+{
+  "name": "scheddel/atlassian-api-client",
+  "description": "Clients for Atlassian REST APIs",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Karl Valentin",
+      "email": "karl.valentin@kvis.de"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "^6.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "AtlassianApiClient\\": "src/AtlassianApiClient"
+    }
+  }
+}
