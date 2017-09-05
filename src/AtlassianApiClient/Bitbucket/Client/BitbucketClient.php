@@ -63,14 +63,17 @@ class BitbucketClient
         return $repositories;
     }
 
+    /**
+     * @param Repository $repository
+     *
+     * @return Branch[]
+     */
     public function getBranchesByRepository(Repository $repository)
     {
         $branches = [];
         $start = 0;
 
         do {
-            var_dump($start);
-
             $response = $this->httpClient->get(
                 '/rest/api/1.0/projects/'
                 . $repository->getProject()->getKey() . '/repos/'
@@ -84,7 +87,6 @@ class BitbucketClient
 
             $data = json_decode($response);
 
-//            print_r($data);
             if (isset($data->nextPageStart)) {
                 $start = $data->nextPageStart;
             }
