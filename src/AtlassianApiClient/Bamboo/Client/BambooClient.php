@@ -2,6 +2,7 @@
 
 namespace AtlassianApiClient\Bamboo\Client;
 
+use AtlassianApiClient\Bamboo\Plan\Factory\BranchFactory;
 use AtlassianApiClient\Bamboo\Plan\Factory\PlanFactory;
 use AtlassianApiClient\Bamboo\Project\Factory\ProjectFactory;
 use AtlassianApiClient\Bamboo\Project\Project;
@@ -70,5 +71,25 @@ class BambooClient
         }
 
         return $plans;
+    }
+
+    public function getBranches($projectKey, $buildKey)
+    {
+        $response = $this->httpClient->get(
+            '/rest/api/latest/plan/' . $projectKey .'-' . $buildKey . '/branch',
+            [
+                'headers' => [
+                    'Accept'     => 'application/json',
+                ]
+            ]
+        )->getBody()->getContents();
+
+        $branches = [];
+
+        foreach (json_decode($response, true)['branches']['branch'] as $branchData) {
+            $branches[] = BranchFactory::createFromArray($branchData);
+        }
+
+        return $branches;
     }
 }
