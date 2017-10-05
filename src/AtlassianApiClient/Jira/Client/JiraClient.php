@@ -3,6 +3,7 @@
 namespace AtlassianApiClient\Jira\Client;
 
 use AtlassianApiClient\Jira\Issue\Factory\IssueFactory;
+use AtlassianApiClient\Jira\Issue\Issue;
 use AtlassianApiClient\Jira\Project\Factory\ProjectFactory;
 use GuzzleHttp\Client;
 
@@ -51,6 +52,20 @@ class JiraClient
             return IssueFactory::createFromArray(json_decode($response, true));
         } catch (\Exception $e) {
             return null;
+        }
+    }
+
+    public function updateIssue(Issue $issue)
+    {
+        try {
+            $response = $this->httpClient->put(
+                '/rest/api/2/issue/' . $issue->getKey(),
+                [
+                    'json' => $issue->getChanges(),
+                ]
+            );
+        } catch (\Exception $e) {
+            var_dump($e->getMessage());
         }
     }
 }

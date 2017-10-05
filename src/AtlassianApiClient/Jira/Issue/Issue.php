@@ -19,7 +19,7 @@ class Issue
     private $key;
 
     /**
-     * @var array
+     * @var IssueField[]
      */
     private $fields = [];
 
@@ -91,6 +91,28 @@ class Issue
      */
     public function setField($name, $value)
     {
-        $this->fields[$name] = $value;
+        if (array_key_exists($name, $this->fields)) {
+            $this->fields[$name]->changeValue($value);
+        } else {
+            $this->fields[$name] = new IssueField($name, $value);
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function getChanges()
+    {
+        $changedFields = [
+            'fields' => [],
+        ];
+
+        foreach ($this->fields as $name => $field) {
+            if ($field->hasChanged()) {
+                $changedFields['fields'][$name] = $field->getValue();
+            }
+        }
+
+        return $changedFields;
     }
 }
