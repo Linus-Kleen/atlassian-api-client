@@ -2,8 +2,10 @@
 
 namespace AtlassianApiClient\Bamboo\Client;
 
+use AtlassianApiClient\Bamboo\Plan\Branch;
 use AtlassianApiClient\Bamboo\Plan\Factory\BranchFactory;
 use AtlassianApiClient\Bamboo\Plan\Factory\PlanFactory;
+use AtlassianApiClient\Bamboo\Plan\Plan;
 use AtlassianApiClient\Bamboo\Project\Factory\ProjectFactory;
 use AtlassianApiClient\Bamboo\Project\Project;
 use GuzzleHttp\Client;
@@ -53,6 +55,9 @@ class BambooClient
         return $projects;
     }
 
+    /**
+     * @return Plan[]
+     */
     public function getPlans()
     {
         $response = $this->httpClient->get(
@@ -73,6 +78,12 @@ class BambooClient
         return $plans;
     }
 
+    /**
+     * @param $projectKey
+     * @param $buildKey
+     *
+     * @return Branch[]
+     */
     public function getBranches($projectKey, $buildKey)
     {
         $response = $this->httpClient->get(
