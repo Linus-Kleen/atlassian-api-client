@@ -90,9 +90,10 @@ class JiraClient
 
     /**
      * @param ProjectVersion $version
+     * @param bool $fullIssues Load each issue via API instead of using the search's result fields
      * @return Issue[]
      */
-    public function getIssuesFromVersion(ProjectVersion $version): array
+    public function getIssuesFromVersion(ProjectVersion $version, bool $fullIssues = false): array
     {
         $projectId = $version->getProjectId();
         $jql = \urlencode(\sprintf('project = %s AND fixVersion = "%s"',
@@ -106,8 +107,10 @@ class JiraClient
         if (\array_key_exists('sections', $searchResult)) {
             foreach ($searchResult['sections'] as $section) {
                 if ('cs' === $section['id']) {
-                    return \array_map(function($data) {
-                        return IssueFactory::createFromArray($data);
+                    return \array_map(function($data) use($fullIssues) {
+                        return $fullIssues
+                            ? $this->getIssueByKey($data['key'])
+                            : IssueFactory::createFromArray($data);
                     }, $section['issues']);
                 }
             }

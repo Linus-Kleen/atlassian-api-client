@@ -21,12 +21,13 @@ class IssueHydrator
         foreach ($data  as $key => $value) {
             switch ($key) {
                 case 'id':
-                    $issue->setId($value);
+                    $issue->setId((int) $value);
                     break;
                 case 'key':
                     $issue->setKey($value);
                     break;
                 case 'fields':
+                    $issue->setSummary($value['summary']);
                     foreach ($value as $fieldName => $fieldData) {
                         $issue->setField($fieldName, $fieldData);
                     }
