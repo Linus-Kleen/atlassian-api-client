@@ -5,6 +5,8 @@ namespace AtlassianApiClient\Jira\Client;
 use AtlassianApiClient\Jira\Issue\Factory\IssueFactory;
 use AtlassianApiClient\Jira\Issue\Issue;
 use AtlassianApiClient\Jira\Project\Factory\ProjectFactory;
+use AtlassianApiClient\Jira\Project\Factory\ProjectVersionFactory;
+use AtlassianApiClient\Jira\Project\Project;
 use GuzzleHttp\Client;
 
 /**
@@ -28,14 +30,44 @@ class JiraClient
     }
 
     /**
-     * @return \AtlassianApiClient\Jira\Project\Project[]
+     * @return Project[]
      */
-    public function getProjects() {
+    public function getProjects(): array
+    {
         $response = $this->httpClient->get(
             '/rest/api/2/project?limit=1000'
         )->getBody();
 
         return ProjectFactory::createProjectsFromJson($response->getContents());
+    }
+
+    /**
+     * @param $projectKey
+     * @return Project
+     */
+    public function getProjectByKey($projectKey): Project
+    {
+        $response = $this->httpClient->get(
+            "/rest/api/2/project/$projectKey"
+        )->getBody();
+
+        $data = \json_decode($response->getContents(), true);
+        return ProjectFactory::createFromArray($data);
+    }
+
+    /**
+     * @param Project $project
+     * @return array
+     */
+    public function getProjectVersions(Project $project): array
+    {
+        $projectKey = $project->getKey();
+        $response = $this->httpClient->get(
+            "/rest/api/2/project/$projectKey/versions"
+        )->getBody();
+
+        $data = \json_decode($response->getContents(), true);
+        return ProjectVersionFactory::createFromList($data);
     }
 
     /**
@@ -58,7 +90,7 @@ class JiraClient
     public function updateIssue(Issue $issue)
     {
         try {
-            $response = $this->httpClient->put(
+            $this->httpClient->put(
                 '/rest/api/2/issue/' . $issue->getKey(),
                 [
                     'json' => $issue->getChanges(),
