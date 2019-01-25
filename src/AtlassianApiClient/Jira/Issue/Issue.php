@@ -19,6 +19,11 @@ class Issue
     private $key;
 
     /**
+     * @var string
+     */
+    private $summary;
+
+    /**
      * @var IssueField[]
      */
     private $fields = [];
@@ -114,5 +119,21 @@ class Issue
         }
 
         return $changedFields;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSummary(): string
+    {
+        return $this->summary;
+    }
+
+    /**
+     * @param string $summary
+     */
+    public function setSummary(string $summary)
+    {
+        $this->summary = $summary;
     }
 }

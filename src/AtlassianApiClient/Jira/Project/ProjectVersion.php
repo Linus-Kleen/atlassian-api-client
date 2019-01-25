@@ -23,6 +23,8 @@ class ProjectVersion
     protected $releaseDate;
     /** @var string|null */
     protected $userReleaseDate;
+    /** @var Project */
+    protected $project;
 
     /**
      * @return string
@@ -165,6 +167,24 @@ class ProjectVersion
     public function setUserReleaseDate($userReleaseDate): ProjectVersion
     {
         $this->userReleaseDate = $userReleaseDate;
+        return $this;
+    }
+
+    /**
+     * @return Project
+     */
+    public function getProject(): Project
+    {
+        return $this->project;
+    }
+
+    /**
+     * @param Project $project
+     * @return ProjectVersion
+     */
+    public function setProject(Project $project): ProjectVersion
+    {
+        $this->project = $project;
         return $this;
     }
 }

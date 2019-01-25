@@ -7,6 +7,7 @@ use AtlassianApiClient\Jira\Issue\Issue;
 use AtlassianApiClient\Jira\Project\Factory\ProjectFactory;
 use AtlassianApiClient\Jira\Project\Factory\ProjectVersionFactory;
 use AtlassianApiClient\Jira\Project\Project;
+use AtlassianApiClient\Jira\Project\ProjectVersion;
 use GuzzleHttp\Client;
 
 /**
@@ -67,7 +68,7 @@ class JiraClient
         )->getBody();
 
         $data = \json_decode($response->getContents(), true);
-        return ProjectVersionFactory::createFromList($data);
+        return ProjectVersionFactory::createFromList($project, $data);
     }
 
     /**
@@ -85,6 +86,34 @@ class JiraClient
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * @param ProjectVersion $version
+     * @return Issue[]
+     */
+    public function getIssuesFromVersion(ProjectVersion $version): array
+    {
+        $projectId = $version->getProjectId();
+        $jql = \urlencode(\sprintf('project = %s AND fixVersion = "%s"',
+            $version->getProject()->getKey(), $version->getName()));
+
+        $response = $this->httpClient->get(
+            "/rest/api/2/issue/picker?query=FL-&currentJQL=$jql&currentProjectId=$projectId"
+        )->getBody();
+        $searchResult = \json_decode($response->getContents(), true);
+
+        if (\array_key_exists('sections', $searchResult)) {
+            foreach ($searchResult['sections'] as $section) {
+                if ('cs' === $section['id']) {
+                    return \array_map(function($data) {
+                        return IssueFactory::createFromArray($data);
+                    }, $section['issues']);
+                }
+            }
+        }
+
+        return [];
     }
 
     public function updateIssue(Issue $issue)

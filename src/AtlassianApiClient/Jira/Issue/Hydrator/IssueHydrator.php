@@ -30,6 +30,10 @@ class IssueHydrator
                     foreach ($value as $fieldName => $fieldData) {
                         $issue->setField($fieldName, $fieldData);
                     }
+                    break;
+                case 'summary':
+                    $issue->setSummary($value);
+                    break;
             }
         }
 
