@@ -84,7 +84,7 @@ class Issue
     /**
      * @param string $name
      *
-     * @return mixed
+     * @return null|IssueField
      */
     public function getField($name)
     {

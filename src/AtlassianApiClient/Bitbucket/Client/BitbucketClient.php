@@ -109,4 +109,13 @@ class BitbucketClient
 
         return $branches;
     }
+
+    public function getCommits(string $issueKey): array
+    {
+        $response = $this->httpClient->get(
+            "/rest/jira/1.0/issues/$issueKey/commits"
+        )->getBody();
+
+        return \json_decode($response->getContents(), true);
+    }
 }
