@@ -29,6 +29,11 @@ class Issue
     private $fields = [];
 
     /**
+     * @var array
+     */
+    private $responseData;
+
+    /**
      * @return int
      */
     public function getId()
@@ -135,5 +140,21 @@ class Issue
     public function setSummary(string $summary)
     {
         $this->summary = $summary;
+    }
+
+    /**
+     * @return array
+     */
+    public function getResponseData(): array
+    {
+        return $this->responseData;
+    }
+
+    /**
+     * @param array $responseData
+     */
+    public function setResponseData(array $responseData)
+    {
+        $this->responseData = $responseData;
     }
 }

@@ -38,6 +38,7 @@ class IssueHydrator
             }
         }
 
+        $issue->setResponseData($data);
         return $issue;
     }
 }

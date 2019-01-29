@@ -90,31 +90,28 @@ class JiraClient
 
     /**
      * @param ProjectVersion $version
-     * @param bool $fullIssues Load each issue via API instead of using the search's result fields
      * @return Issue[]
      */
-    public function getIssuesFromVersion(ProjectVersion $version, bool $fullIssues = false): array
+    public function getIssuesFromVersion(ProjectVersion $version): array
     {
-        $projectId = $version->getProjectId();
         $jql = \urlencode(\sprintf('project = %s AND fixVersion = "%s"',
             $version->getProject()->getKey(), $version->getName()));
 
         $response = $this->httpClient->get(
-            "/rest/api/2/issue/picker?query=FL-&currentJQL=$jql&currentProjectId=$projectId"
+            "/rest/api/2/search?jql=$jql"
         )->getBody();
-        $searchResult = \json_decode($response->getContents(), true);
 
-        if (\array_key_exists('sections', $searchResult)) {
-            foreach ($searchResult['sections'] as $section) {
-                if ('cs' === $section['id']) {
-                    return \array_map(function($data) use($fullIssues) {
-                        return $fullIssues
-                            ? $this->getIssueByKey($data['key'])
-                            : IssueFactory::createFromArray($data);
-                    }, $section['issues']);
-                }
+        $searchResult = \json_decode($response->getContents(), true);
+        $issues = [];
+
+        if (\array_key_exists('issues', $searchResult)) {
+            foreach ($searchResult['issues'] as $issueData) {
+                $issues[] = IssueFactory::createFromArray($issueData);
             }
         }
+
+        return $issues;
+    }
 
         return [];
     }
