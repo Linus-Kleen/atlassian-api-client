@@ -113,9 +113,6 @@ class JiraClient
         return $issues;
     }
 
-        return [];
-    }
-
     public function updateIssue(Issue $issue)
     {
         try {
