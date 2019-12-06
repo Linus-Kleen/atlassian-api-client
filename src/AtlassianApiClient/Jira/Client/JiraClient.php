@@ -27,6 +27,11 @@ class JiraClient
     private $httpClient;
 
     /**
+     * @var int
+     */
+    protected $resultsLimit = 100;
+
+    /**
      * JiraClient constructor.
      * @param Client $httpClient
      */
@@ -36,12 +41,30 @@ class JiraClient
     }
 
     /**
+     * @return int
+     */
+    public function getResultsLimit(): int
+    {
+        return $this->resultsLimit;
+    }
+
+    /**
+     * @param int $resultsLimit
+     * @return JiraClient
+     */
+    public function setResultsLimit(int $resultsLimit): JiraClient
+    {
+        $this->resultsLimit = $resultsLimit;
+        return $this;
+    }
+
+    /**
      * @return Project[]
      */
     public function getProjects(): array
     {
         $response = $this->httpClient->get(
-            '/rest/api/2/project?limit=1000'
+            '/rest/api/2/project?limit=' . $this->getResultsLimit()
         )->getBody();
 
         return ProjectFactory::createProjectsFromJson($response->getContents());
@@ -102,7 +125,7 @@ class JiraClient
         $jql = urlencode($query);
 
         $response = $this->httpClient->get(
-            "/rest/api/2/search?jql=$jql"
+            "/rest/api/2/search?jql=$jql&maxResults=" . $this->getResultsLimit()
         )->getBody();
 
         $searchResult = json_decode($response->getContents(), true);
