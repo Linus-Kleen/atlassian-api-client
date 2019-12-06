@@ -8,7 +8,12 @@ use AtlassianApiClient\Jira\Project\Factory\ProjectFactory;
 use AtlassianApiClient\Jira\Project\Factory\ProjectVersionFactory;
 use AtlassianApiClient\Jira\Project\Project;
 use AtlassianApiClient\Jira\Project\ProjectVersion;
+use Exception;
 use GuzzleHttp\Client;
+use function array_key_exists;
+use function json_decode;
+use function sprintf;
+use function urlencode;
 
 /**
  * Class JiraClient
@@ -52,7 +57,7 @@ class JiraClient
             "/rest/api/2/project/$projectKey"
         )->getBody();
 
-        $data = \json_decode($response->getContents(), true);
+        $data = json_decode($response->getContents(), true);
         return ProjectFactory::createFromArray($data);
     }
 
@@ -67,13 +72,13 @@ class JiraClient
             "/rest/api/2/project/$projectKey/versions"
         )->getBody();
 
-        $data = \json_decode($response->getContents(), true);
+        $data = json_decode($response->getContents(), true);
         return ProjectVersionFactory::createFromList($project, $data);
     }
 
     /**
      * @param string $issueKey
-     * @return \AtlassianApiClient\Jira\Issue\Issue
+     * @return Issue
      */
     public function getIssueByKey($issueKey)
     {
@@ -83,9 +88,33 @@ class JiraClient
             )->getBody()->getContents();
 
             return IssueFactory::createFromArray(json_decode($response, true));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * @param string $query
+     * @return Issue[]
+     */
+    public function getIssuesFromJql(string $query): array
+    {
+        $jql = urlencode($query);
+
+        $response = $this->httpClient->get(
+            "/rest/api/2/search?jql=$jql"
+        )->getBody();
+
+        $searchResult = json_decode($response->getContents(), true);
+        $issues = [];
+
+        if (array_key_exists('issues', $searchResult)) {
+            foreach ($searchResult['issues'] as $issueData) {
+                $issues[] = IssueFactory::createFromArray($issueData);
+            }
+        }
+
+        return $issues;
     }
 
     /**
@@ -94,23 +123,8 @@ class JiraClient
      */
     public function getIssuesFromVersion(ProjectVersion $version): array
     {
-        $jql = \urlencode(\sprintf('project = %s AND fixVersion = "%s"',
+        return $this->getIssuesFromJql(sprintf('project = %s AND fixVersion = "%s"',
             $version->getProject()->getKey(), $version->getName()));
-
-        $response = $this->httpClient->get(
-            "/rest/api/2/search?jql=$jql"
-        )->getBody();
-
-        $searchResult = \json_decode($response->getContents(), true);
-        $issues = [];
-
-        if (\array_key_exists('issues', $searchResult)) {
-            foreach ($searchResult['issues'] as $issueData) {
-                $issues[] = IssueFactory::createFromArray($issueData);
-            }
-        }
-
-        return $issues;
     }
 
     public function updateIssue(Issue $issue)
@@ -122,7 +136,7 @@ class JiraClient
                     'json' => $issue->getChanges(),
                 ]
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             var_dump($e->getMessage());
         }
     }
