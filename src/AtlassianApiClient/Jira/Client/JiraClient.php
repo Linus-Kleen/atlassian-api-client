@@ -11,6 +11,7 @@ use AtlassianApiClient\Jira\Project\ProjectVersion;
 use Exception;
 use GuzzleHttp\Client;
 use function array_key_exists;
+use function http_build_query;
 use function json_decode;
 use function sprintf;
 use function urlencode;
@@ -100,14 +101,16 @@ class JiraClient
     }
 
     /**
-     * @param string $issueKey
+     * @param int|string $issueKeyOrId
+     * @param array|null $options Query string options
      * @return Issue
      */
-    public function getIssueByKey($issueKey)
+    public function getIssueByKey($issueKeyOrId, array $options = null)
     {
         try {
+            $optionsString = null === $options ? '' : ('?' . http_build_query($options));
             $response = $this->httpClient->get(
-                '/rest/api/2/issue/' . $issueKey
+                '/rest/api/2/issue/' . $issueKeyOrId . $optionsString
             )->getBody()->getContents();
 
             return IssueFactory::createFromArray(json_decode($response, true));
